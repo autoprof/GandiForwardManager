@@ -1,0 +1,2 @@
+rootProject.name = "GandiForwardManager"
+include ':app'
