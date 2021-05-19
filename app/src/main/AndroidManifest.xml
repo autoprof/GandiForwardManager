@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.syntessense.app.gandiforwardmanager">
+    package="net.syntessense.app.gandiforwardmanager" >
 
     <application
         android:allowBackup="true"
@@ -8,11 +8,15 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GandiForwardManager">
+        android:theme="@style/Theme.GandiForwardManager" >
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
         <activity
             android:name=".EditActivity"
             android:label="@string/title_activity_edit"
-            android:theme="@style/Theme.GandiForwardManager.NoActionBar"></activity>
+            android:theme="@style/Theme.GandiForwardManager.NoActionBar" />
         <activity
             android:name=".AddressesActivity"
             android:label="@string/title_activity_addresses"
@@ -24,7 +28,7 @@
         <activity
             android:name=".DomainsActivity"
             android:label="@string/title_activity_domains"
-            android:theme="@style/Theme.GandiForwardManager.NoActionBar">
+            android:theme="@style/Theme.GandiForwardManager.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
