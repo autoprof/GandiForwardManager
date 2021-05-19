@@ -11,27 +11,35 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.preference.Preference
+import androidx.preference.PreferenceManager
 import net.syntessense.app.gandiforwardmanager.databinding.EditActivityBinding
 
 class EditActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: EditActivityBinding
+    private var ckbs = ArrayList<CheckBox>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        var mainForwards = ArrayList<Target>()
-        mainForwards.add(Target("tgt1", true))
-        mainForwards.add(Target("tgt2", true))
-        mainForwards.add(Target("tgt3", false))
-        mainForwards.add(Target("tgt4", false))
-
         binding = EditActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setSupportActionBar(binding.toolbar)
-        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
+
+        var mfs = PreferenceManager.getDefaultSharedPreferences(this).getString("faddresses", "") ?: ""
+        var mainForwards = ArrayList<Target>()
+        for ( mf in mfs.split("\n") ) {
+            var mflr = mf.split(":")
+            mainForwards.add(
+                net.syntessense.app.gandiforwardmanager.Target(
+                    mflr[0],
+                    mflr.size > 1 && mflr[1] == "1"
+                )
+            )
+        }
+
 
         var isNew = intent.getBooleanExtra("new", false);
         var domain = intent.getStringExtra("domain") ?: "ERROR";
@@ -45,16 +53,16 @@ class EditActivity : AppCompatActivity() {
         }
 
         findViewById<TextView>(R.id.editDomain).text = domain
-        findViewById<TextView>(R.id.editSource).text = source
+        findViewById<EditText>(R.id.editSource).setText(source)
         var editFields = findViewById<LinearLayout>(R.id.editFields);
 
         var ckb : CheckBox
-        var ckbs = ArrayList<CheckBox>()
         for (i in mainForwards) {
             ckb = CheckBox(this)
             ckb.text = i.address
             ckb.isChecked = (isNew && i.selected) || destinations.contains(i.address)
             editFields.addView(ckb)
+            ckbs.add(ckb)
         }
 
         var exists : Boolean
