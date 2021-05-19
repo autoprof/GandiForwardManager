@@ -2,9 +2,11 @@ package net.syntessense.app.gandiforwardmanager
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -19,6 +21,11 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
     private var addresses = ArrayList<Address>()
     var ctx = this;
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        finish()
+        return true;
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -27,7 +34,6 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
 
         setSupportActionBar(binding.toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
-
 
         layout = findViewById(R.id.addresses_refresher)
         layout.setOnRefreshListener(this)
@@ -53,8 +59,8 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         */
 
 
-        val domain = intent.getStringExtra("domain")
-        title = domain
+        title = intent.getStringExtra("domain")
+
 
         binding.fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)

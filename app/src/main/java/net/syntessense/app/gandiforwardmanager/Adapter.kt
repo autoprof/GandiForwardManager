@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 abstract class ListAdapter<T>(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var ctx = ctx
     private var inflater: LayoutInflater = LayoutInflater.from(ctx)
     abstract fun onItemClick(v: View, p: Int);
     abstract fun setRepresentation(v: RecyclerView.ViewHolder, p: Int);
