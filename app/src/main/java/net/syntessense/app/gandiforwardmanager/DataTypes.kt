@@ -2,7 +2,9 @@ package net.syntessense.app.gandiforwardmanager
 
 class Domain (var fqdn: String, var href: String)
 
-class Address (var source: String, var destinations : List<String>, var href : String) {
+class Target(var address : String, var selected : Boolean)
+
+class Address (var source: String, var destinations : ArrayList<String>, var href : String) {
 
 /*
     companion object {

@@ -18,6 +18,7 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
 
     private lateinit var binding: AddressesActivityBinding
     private lateinit var layout: SwipeRefreshLayout
+    private lateinit var domain : String
     private var addresses = ArrayList<Address>()
     var ctx = this;
 
@@ -42,6 +43,9 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         targets.add("tgt1")
         targets.add("tgt2")
         targets.add("tgt3")
+        targets.add("tgt4")
+        targets.add("tgt5")
+        targets.add("tgt6")
         addresses.add(Address("source1", targets, "href"))
         addresses.add(Address("source2", targets, "href"))
         addresses.add(Address("source3", targets, "href"))
@@ -58,13 +62,17 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         setupActionBarWithNavController(navController, appBarConfiguration)
         */
 
-
-        title = intent.getStringExtra("domain")
+        domain = intent.getStringExtra("domain") ?: "ERROR"
+        title = domain
 
 
         binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            var intent = Intent(ctx, EditActivity::class.java)
+            var b = Bundle()
+            b.putBoolean("new", true)
+            b.putString("domain", domain)
+            intent.putExtras(b)
+            startActivity(intent)
         }
     }
 
@@ -89,20 +97,19 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
             }
 
             override fun onItemClick(v: View, p: Int) {
-                /*
-                var intent = Intent(ctx, AddressesActivity::class.java)
+                var intent = Intent(ctx, EditActivity::class.java)
                 var b = Bundle()
-                b.putString("address", addresses.get(p).source)
+                b.putBoolean("new", false)
+                b.putString("domain", domain)
+                b.putString("source", addresses[p].source)
+                b.putStringArrayList("destinations", addresses[p].destinations)
                 intent.putExtras(b)
                 startActivity(intent)
-                */
             }
 
             override fun setRepresentation(v: RecyclerView.ViewHolder, p: Int) {
-                v.itemView.findViewById<TextView>(R.id.source).setText(addresses.get(p).source)
-                v.itemView.findViewById<TextView>(R.id.target).setText(
-                    addresses.get(p).destinations.joinToString("\n")
-                )
+                v.itemView.findViewById<TextView>(R.id.source).text = addresses[p].source
+                v.itemView.findViewById<TextView>(R.id.target).text = addresses[p].destinations.joinToString("\n")
             }
 
         }

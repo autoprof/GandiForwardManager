@@ -10,9 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GandiForwardManager">
         <activity
+            android:name=".EditActivity"
+            android:label="@string/title_activity_edit"
+            android:theme="@style/Theme.GandiForwardManager.NoActionBar"></activity>
+        <activity
             android:name=".AddressesActivity"
             android:label="@string/title_activity_addresses"
-            android:theme="@style/Theme.GandiForwardManager.NoActionBar"></activity>
+            android:theme="@style/Theme.GandiForwardManager.NoActionBar" />
         <activity
             android:name=".AddressesActivity"
             android:label="@string/title_activity_addresses"
