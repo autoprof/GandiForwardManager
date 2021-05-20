@@ -22,16 +22,11 @@
             android:label="@string/title_activity_addresses"
             android:theme="@style/Theme.GandiForwardManager.NoActionBar" />
         <activity
-            android:name=".AddressesActivity"
-            android:label="@string/title_activity_addresses"
-            android:theme="@style/Theme.GandiForwardManager.NoActionBar" />
-        <activity
             android:name=".DomainsActivity"
             android:label="@string/title_activity_domains"
             android:theme="@style/Theme.GandiForwardManager.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

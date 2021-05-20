@@ -1,67 +1,51 @@
 package net.syntessense.app.gandiforwardmanager
 
+
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.preference.Preference
 import androidx.preference.PreferenceManager
 import net.syntessense.app.gandiforwardmanager.databinding.EditActivityBinding
 
+
 class EditActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: EditActivityBinding
     private var ckbs = ArrayList<CheckBox>()
+    private var isNew = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = EditActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        var mfs = PreferenceManager.getDefaultSharedPreferences(this).getString("faddresses", "") ?: ""
-        var mainForwards = ArrayList<Target>()
-        for ( mf in mfs.split("\n") ) {
-            var mflr = mf.split(":")
-            mainForwards.add(
-                net.syntessense.app.gandiforwardmanager.Target(
-                    mflr[0],
-                    mflr.size > 1 && mflr[1] == "1"
-                )
-            )
-        }
+        val mainForwards = Target.parseList(
+            PreferenceManager
+                .getDefaultSharedPreferences(this)
+                .getString("faddresses", "") ?: ""
+        )
 
 
-        var isNew = intent.getBooleanExtra("new", false);
-        var domain = intent.getStringExtra("domain") ?: "ERROR";
-        var source = intent.getStringExtra("source") ?: "";
-        var destinations = intent.getStringArrayListExtra("destinations") ?: ArrayList();
+        isNew = intent.getBooleanExtra("new", false)
+        val domain = intent.getStringExtra("domain") ?: "ERROR"
+        val source = intent.getStringExtra("source") ?: ""
+        val destinations = intent.getStringArrayListExtra("destinations") ?: ArrayList()
 
-        if ( !isNew ) {
-            title = "$source@$domain"
-        } else {
-            title = "<new>@$domain"
-        }
+        title = if (isNew) "<new>@$domain" else "$source@$domain"
 
-        findViewById<TextView>(R.id.editDomain).text = domain
-        findViewById<EditText>(R.id.editSource).setText(source)
-        var editFields = findViewById<LinearLayout>(R.id.editFields);
+        binding.editDomain.text = domain
+        binding.editSource.setText(source)
 
         var ckb : CheckBox
         for (i in mainForwards) {
             ckb = CheckBox(this)
             ckb.text = i.address
             ckb.isChecked = (isNew && i.selected) || destinations.contains(i.address)
-            editFields.addView(ckb)
+            binding.editFields.addView(ckb)
             ckbs.add(ckb)
         }
 
@@ -74,9 +58,8 @@ class EditActivity : AppCompatActivity() {
             if (!exists)
                 secondaryForwards += (if (secondaryForwards == "") "" else "\n") + i
         }
-        findViewById<EditText>(R.id.editTarget).setText(secondaryForwards)
-
-        binding.fab.setOnClickListener { view ->
+        binding.editTarget.setText(secondaryForwards)
+        binding.fab.setOnClickListener {
             finish()
         }
     }
@@ -85,4 +68,22 @@ class EditActivity : AppCompatActivity() {
         finish()
         return true
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(if (isNew) R.menu.edit_new else R.menu.edit_edit, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        item.itemId
+        return when (item.itemId) {
+            R.id.action_cancel -> {finish(); true}
+            R.id.action_delete -> {finish(); true}
+            R.id.action_create -> {finish(); true}
+            R.id.action_update -> {finish(); true}
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    // public boolean onOptionsItemSelected(MenuItem item) {
 }

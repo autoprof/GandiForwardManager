@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 abstract class ListAdapter<T>(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var inflater: LayoutInflater = LayoutInflater.from(ctx)
-    abstract fun onItemClick(v: View, p: Int);
-    abstract fun setRepresentation(v: RecyclerView.ViewHolder, p: Int);
-    abstract fun getItemView(): Int;
-    abstract fun getData(): List<T>;
+    abstract fun onItemClick(v: View, p: Int)
+    abstract fun setRepresentation(v: RecyclerView.ViewHolder, p: Int)
+    abstract fun getItemView(): Int
+    abstract fun getData(): List<T>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return ViewHolder(this, inflater.inflate(getItemView(), parent, false))
@@ -22,7 +22,7 @@ abstract class ListAdapter<T>(ctx: Context) : RecyclerView.Adapter<RecyclerView.
         setRepresentation(holder, position)
     }
 
-    class ViewHolder<T> constructor(final var adapter: ListAdapter<T>, itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    class ViewHolder<T> constructor(private var adapter: ListAdapter<T>, itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
         init {
             itemView.setOnClickListener(this)

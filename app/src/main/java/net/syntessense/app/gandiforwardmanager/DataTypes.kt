@@ -2,7 +2,26 @@ package net.syntessense.app.gandiforwardmanager
 
 class Domain (var fqdn: String, var href: String)
 
-class Target(var address : String, var selected : Boolean)
+class Target(var address : String, var selected : Boolean) {
+    companion object {
+        fun parseList(str : String) : ArrayList<Target> {
+            val mainTargets = ArrayList<Target>()
+            var tgt : List<String>
+            for ( mf in str.split("\n") ) {
+                if (mf.trim() != "") {
+                    tgt = mf.split(":")
+                    mainTargets.add(
+                        Target(
+                            tgt[0],
+                            tgt.size > 1 && tgt[1] == "1"
+                        )
+                    )
+                }
+            }
+            return mainTargets
+        }
+    }
+}
 
 class Address (var source: String, var destinations : ArrayList<String>, var href : String) {
 

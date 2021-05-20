@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,7 +15,7 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
     private lateinit var binding: DomainsActivityBinding
     private lateinit var layout: SwipeRefreshLayout
     private var domains = ArrayList<Domain>()
-    var ctx = this;
+    var ctx = this
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,45 +31,45 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
         domains.add(Domain("hello2", "hello2"))
         domains.add(Domain("hello3", "hello3"))
 
-        var recyclerView = findViewById<RecyclerView>(R.id.domains_list)
+        val recyclerView = findViewById<RecyclerView>(R.id.domains_list)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = this.getAdapter()
 
-        binding.fab.setOnClickListener { view ->
+        binding.fab.setOnClickListener {
             startActivity(Intent(ctx, SettingsActivity::class.java))
         }
 
     }
 
     override fun onRefresh() {
-        layout.isRefreshing = false;
+        layout.isRefreshing = false
     }
 
     private fun getAdapter():ListAdapter<Domain> {
         return object : ListAdapter<Domain>(ctx) {
 
             override fun getData(): List<Domain> {
-                return domains;
+                return domains
             }
 
             override fun getItemCount(): Int {
-                return domains.size;
+                return domains.size
             }
 
             override fun getItemView(): Int {
-                return R.layout.domain;
+                return R.layout.domain
             }
 
             override fun onItemClick(v: View, p: Int) {
-                var intent = Intent(ctx, AddressesActivity::class.java)
-                var b = Bundle()
-                b.putString("domain", domains.get(p).fqdn)
+                val intent = Intent(ctx, AddressesActivity::class.java)
+                val b = Bundle()
+                b.putString("domain", domains[p].fqdn)
                 intent.putExtras(b)
                 startActivity(intent)
             }
 
             override fun setRepresentation(v: RecyclerView.ViewHolder, p: Int) {
-                v.itemView.findViewById<TextView>(R.id.domain).setText(domains.get(p).fqdn)
+                v.itemView.findViewById<TextView>(R.id.domain).text = domains[p].fqdn
             }
 
         }
