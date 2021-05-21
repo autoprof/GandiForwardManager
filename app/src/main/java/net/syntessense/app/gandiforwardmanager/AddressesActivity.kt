@@ -9,21 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.snackbar.Snackbar
 import net.syntessense.app.gandiforwardmanager.databinding.AddressesActivityBinding
-
 
 class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var binding: AddressesActivityBinding
-    private lateinit var layout: SwipeRefreshLayout
     private lateinit var domain : String
+    private lateinit var adapter: ListAdapter<Address>
+    private lateinit var api: GandiApi
     private var addresses = ArrayList<Address>()
     var ctx = this
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        finish()
-        return true
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,21 +28,12 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val targets = ArrayList<String>()
-        targets.add("tgt1")
-        targets.add("tgt2")
-        targets.add("tgt3")
-        targets.add("tgt4")
-        targets.add("tgt5")
-        targets.add("tgt6")
-        addresses.add(Address("source1", targets, "href"))
-        addresses.add(Address("source2", targets, "href"))
-        addresses.add(Address("source3", targets, "href"))
-        addresses.add(Address("source4", targets, "href"))
+        api = this.getApi()
+        adapter = this.getAdapter()
 
         binding.addressesRefresher.setOnRefreshListener(this)
         binding.addressesList.layoutManager = LinearLayoutManager(this)
-        binding.addressesList.adapter = this.getAdapter()
+        binding.addressesList.adapter = adapter
         domain = intent.getStringExtra("domain") ?: "ERROR"
         title = domain
 
@@ -56,30 +43,44 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
             b.putBoolean("new", true)
             b.putString("domain", domain)
             intent.putExtras(b)
-            startActivity(intent)
+            startActivityForResult(intent, 0)
         }
+
+        api.getAddresses(domain)
 
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        finish()
+        return true
+    }
+
     override fun onRefresh() {
-        layout.isRefreshing = false
+        api.getAddresses(domain)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK)
+            api.getAddresses(domain)
     }
 
     private fun getAdapter():ListAdapter<Address> {
         return object : ListAdapter<Address>(ctx) {
-
             override fun getData(): List<Address> {
                 return addresses
             }
-
             override fun getItemCount(): Int {
                 return addresses.size
             }
-
             override fun getItemView(): Int {
                 return R.layout.address
             }
-
+            override fun setRepresentation(v: RecyclerView.ViewHolder, p: Int) {
+                v.itemView.findViewById<TextView>(R.id.source).text = addresses[p].source
+                v.itemView.findViewById<TextView>(R.id.target).text =
+                    addresses[p].destinations.joinToString("\n")
+            }
             override fun onItemClick(v: View, p: Int) {
                 val intent = Intent(ctx, EditActivity::class.java)
                 val b = Bundle()
@@ -88,15 +89,26 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
                 b.putString("source", addresses[p].source)
                 b.putStringArrayList("destinations", addresses[p].destinations)
                 intent.putExtras(b)
-                startActivity(intent)
+                startActivityForResult(intent, 0)
             }
+        }
+    }
 
-            override fun setRepresentation(v: RecyclerView.ViewHolder, p: Int) {
-                v.itemView.findViewById<TextView>(R.id.source).text = addresses[p].source
-                v.itemView.findViewById<TextView>(R.id.target).text =
-                    addresses[p].destinations.joinToString("\n")
+    private fun getApi(): GandiApi {
+        return object: GandiApi(ctx) {
+            override fun notify(msg: String) {
+                Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
             }
-
+            override fun onAddressesQuery() {
+                binding.addressesRefresher.isRefreshing = true
+            }
+            override fun onAddressesReady(addresses: ArrayList<Address>) {
+                ctx.addresses.clear()
+                for (a in addresses)
+                    ctx.addresses.add(a)
+                adapter.notifyDataSetChanged()
+                binding.addressesRefresher.isRefreshing = false
+            }
         }
     }
 

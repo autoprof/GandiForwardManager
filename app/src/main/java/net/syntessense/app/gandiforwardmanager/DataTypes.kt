@@ -1,6 +1,7 @@
 package net.syntessense.app.gandiforwardmanager
 
-class Domain (var fqdn: String, var href: String)
+import org.json.JSONArray
+import org.json.JSONObject
 
 class Target(var address : String, var selected : Boolean) {
     companion object {
@@ -8,7 +9,7 @@ class Target(var address : String, var selected : Boolean) {
             val mainTargets = ArrayList<Target>()
             var tgt : List<String>
             for ( mf in str.split("\n") ) {
-                if (mf.trim() != "") {
+                if (mf.trim().isNotEmpty()) {
                     tgt = mf.split(":")
                     mainTargets.add(
                         Target(
@@ -23,29 +24,39 @@ class Target(var address : String, var selected : Boolean) {
     }
 }
 
-class Address (var source: String, var destinations : ArrayList<String>, var href : String) {
-
-/*
+class Domain (var fqdn: String, var href: String) {
     companion object {
-        fun parseAddresses(addresses : String) : ArrayList<String> {
-            var strs = addresses.split("\n")
-            var adds = ArrayList<String>()
-            for (i in strs)
-                adds.add(i.trim().lowercase())
-            return adds;
+        fun parseDomains(json: String): ArrayList<Domain> {
+            val domains: ArrayList<Domain> = ArrayList()
+            val reader = JSONArray(json)
+            val l = reader.length()
+            var obj: JSONObject
+            for (i in 0 until l) {
+                obj = reader.getJSONObject(i)
+                domains.add(Domain(obj.getString("fqdn"), obj.getString("href")))
+            }
+            return domains
         }
     }
+}
 
-    static public ArrayList<ForwardAddress> parseFAddresses (String addresses ) {
-        String[] strs = addresses.split("\n");
-        String[] strss;
-        ArrayList<ForwardAddress> arr = new ArrayList<>();
-        for ( int i = 0; i < strs.length; i++ ) {
-            strss = strs[i].trim().toLowerCase().split(":");
-            arr.add(new ForwardAddress(strss[0], strss.length > 1 && strss[1].charAt(0) == '1'));
+class Address (var source: String, var destinations : ArrayList<String>, var href : String) {
+    companion object {
+        fun parseAddresses(json: String): ArrayList<Address> {
+            val addresses: ArrayList<Address> = ArrayList()
+            val reader = JSONArray(json)
+            val l = reader.length()
+            var obj: JSONObject
+            var to: JSONArray
+            var tos: ArrayList<String>
+            for (i in 0 until l) {
+                obj = reader.getJSONObject(i)
+                to = obj.getJSONArray("destinations")
+                tos = ArrayList()
+                for (j in 0 until to.length()) tos.add(to.getString(j))
+                addresses.add(Address(obj.getString("source"), tos, obj.getString("href")))
+            }
+            return addresses
         }
-        return arr;
     }
-*/
-
 }

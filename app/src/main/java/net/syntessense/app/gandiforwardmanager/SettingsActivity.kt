@@ -4,48 +4,55 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreference
+import com.google.android.material.snackbar.Snackbar
 
 class SettingsActivity : AppCompatActivity() {
+
+    private var ctx = this
+    private lateinit var fragment : SettingsFragment
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.settings_activity)
+        if (savedInstanceState == null) {
+            fragment = SettingsFragment()
+            supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.settings, fragment)
+                    .commit()
+        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        getApi().getDomains()
+    }
 
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.settings_activity)
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.settings, SettingsFragment())
-                    .commit()
-        }
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    }
-
     class SettingsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-
-            val domains = ArrayList<String>()
-            domains.add("domain1")
-            domains.add("domain2")
-            domains.add("domain3")
-
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
-
-            val prefCat = PreferenceCategory(preferenceScreen.context)
-            prefCat.title = "Domains to show in list"
-            preferenceScreen.addPreference(prefCat)
-            var domainPref : SwitchPreference
-            for (d in domains) {
-                domainPref = SwitchPreference(preferenceScreen.context)
-                domainPref.title = d
-                domainPref.key = "show_domain_$d"
-                prefCat.addPreference(domainPref)
-            }
-
         }
     }
+
+    fun getApi(): GandiApi {
+        return object: GandiApi(ctx) {
+            override fun onDomainsReady(domains: ArrayList<Domain>) {
+                val prefCat = PreferenceCategory(fragment.preferenceScreen.context)
+                prefCat.title = "Domains to show in list"
+                fragment.preferenceScreen.addPreference(prefCat)
+                var domainPref : SwitchPreference
+                for (d in domains) {
+                    domainPref = SwitchPreference(fragment.preferenceScreen.context)
+                    domainPref.title = d.fqdn
+                    domainPref.key = "show_domain_${d.fqdn}"
+                    prefCat.addPreference(domainPref)
+                }
+            }
+        }
+    }
+
 }

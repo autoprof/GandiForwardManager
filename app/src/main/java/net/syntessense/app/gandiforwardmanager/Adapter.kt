@@ -23,15 +23,12 @@ abstract class ListAdapter<T>(ctx: Context) : RecyclerView.Adapter<RecyclerView.
     }
 
     class ViewHolder<T> constructor(private var adapter: ListAdapter<T>, itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
-
         init {
             itemView.setOnClickListener(this)
         }
-
         override fun onClick(v: View) {
             adapter.onItemClick(v, adapterPosition)
         }
-
     }
 
 }
