@@ -16,7 +16,8 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
 
     private lateinit var binding: DomainsActivityBinding
     private lateinit var adapter: ListAdapter<Domain>
-    private lateinit var api: GandiApi
+    private var apis = ArrayList<GandiApi>()
+    private var apisReady = 0
     private var rawDomains = ArrayList<Domain>()
     private var domains = ArrayList<Domain>()
     var ctx = this
@@ -26,18 +27,26 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
         binding = DomainsActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        api = this.getApi()
         adapter = this.getAdapter()
+        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
+        for (ak in (sp.getString("apiKey", "") ?: "").split("\n"))
+            if (ak.trim().isNotEmpty())
+                apis.add(this.getApi(ak.trim()))
 
         binding.domainsRefresher.setOnRefreshListener(this)
         binding.domainsList.layoutManager = LinearLayoutManager(this)
         binding.domainsList.adapter = adapter
         binding.fab.setOnClickListener {
-            startActivity(Intent(ctx, SettingsActivity::class.java))
+            startActivityForResult(Intent(ctx, SettingsActivity::class.java), 0)
         }
-
         onRefresh()
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK)
+            onRefresh()
+        else refreshDomains()
     }
 
     override fun onResume() {
@@ -46,7 +55,13 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
     }
 
     override fun onRefresh() {
-        api.getDomains()
+        if (apis.size == 0)
+            return
+        binding.domainsRefresher.isRefreshing = true
+        apisReady = 0
+        rawDomains = ArrayList()
+        for(api in apis)
+            api.getDomains()
     }
 
     private fun refreshDomains() {
@@ -75,6 +90,7 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
             override fun onItemClick(v: View, p: Int) {
                 val intent = Intent(ctx, AddressesActivity::class.java)
                 val b = Bundle()
+                b.putString("apiKey", domains[p].apiKey)
                 b.putString("domain", domains[p].fqdn)
                 intent.putExtras(b)
                 startActivity(intent)
@@ -82,18 +98,19 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
         }
     }
 
-    fun getApi(): GandiApi {
-        return object: GandiApi(ctx) {
+    private fun getApi(apiKey: String): GandiApi {
+        return object: GandiApi(apiKey, ctx) {
             override fun notify(msg: String) {
                 Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
             }
-            override fun onDomainsQuery() {
-                binding.domainsRefresher.isRefreshing = true
-            }
             override fun onDomainsReady(domains: ArrayList<Domain>) {
-                rawDomains = domains
-                refreshDomains()
-                binding.domainsRefresher.isRefreshing = false
+                for (d in domains)
+                    rawDomains.add(d)
+                apisReady++
+                if (apisReady == apis.size) {
+                    refreshDomains()
+                    binding.domainsRefresher.isRefreshing = false
+                }
             }
         }
     }

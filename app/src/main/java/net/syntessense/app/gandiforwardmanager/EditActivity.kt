@@ -15,6 +15,7 @@ class EditActivity : AppCompatActivity() {
 
     private lateinit var binding: EditActivityBinding
     private var checkboxes = ArrayList<CheckBox>()
+    private lateinit var apiKey : String
     private lateinit var domain : String
     private lateinit var source : String
     private lateinit var api: GandiApi
@@ -34,12 +35,14 @@ class EditActivity : AppCompatActivity() {
                 .getString("faddresses", "") ?: ""
         )
 
-        api = getApi()
         isNew = intent.getBooleanExtra("new", false)
+        apiKey = intent.getStringExtra("apiKey") ?: "ERROR"
         domain = intent.getStringExtra("domain") ?: "ERROR"
         source = intent.getStringExtra("source") ?: ""
         val destinations = intent.getStringArrayListExtra("destinations") ?: ArrayList()
 
+
+        api = getApi()
         title = if (isNew) "<new>@$domain" else "$source@$domain"
 
         binding.editDomain.text = domain
@@ -129,7 +132,7 @@ class EditActivity : AppCompatActivity() {
     }
 
     private fun getApi(): GandiApi {
-        return object: GandiApi(ctx) {
+        return object: GandiApi(apiKey, ctx) {
             override fun notify(msg: String) {
                 Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
             }

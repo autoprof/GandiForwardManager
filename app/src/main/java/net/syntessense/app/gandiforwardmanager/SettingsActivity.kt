@@ -6,12 +6,12 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreference
-import com.google.android.material.snackbar.Snackbar
 
 class SettingsActivity : AppCompatActivity() {
 
     private var ctx = this
     private lateinit var fragment : SettingsFragment
+    private var apiKeyInit = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,10 +24,18 @@ class SettingsActivity : AppCompatActivity() {
                     .commit()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        getApi().getDomains()
+        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
+        for (ak in (sp.getString("apiKey", "") ?: "").split("\n"))
+            if (ak.trim().isNotEmpty())
+                this.getApi(ak.trim()).getDomains()
+        apiKeyInit = sp.getString("apiKey", "") ?: ""
     }
 
     override fun onSupportNavigateUp(): Boolean {
+        setResult(
+            if ((PreferenceManager.getDefaultSharedPreferences(ctx).getString("apiKey", "") ?: "")
+            != apiKeyInit) RESULT_CANCELED else RESULT_OK
+        )
         finish()
         return true
     }
@@ -38,8 +46,8 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    fun getApi(): GandiApi {
-        return object: GandiApi(ctx) {
+    private fun getApi(apiKey: String): GandiApi {
+        return object: GandiApi(apiKey, ctx) {
             override fun onDomainsReady(domains: ArrayList<Domain>) {
                 val prefCat = PreferenceCategory(fragment.preferenceScreen.context)
                 prefCat.title = "Domains to show in list"

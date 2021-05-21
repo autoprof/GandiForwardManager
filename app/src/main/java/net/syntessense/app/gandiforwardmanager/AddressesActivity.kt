@@ -16,6 +16,7 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
 
     private lateinit var binding: AddressesActivityBinding
     private lateinit var domain : String
+    private lateinit var apiKey : String
     private lateinit var adapter: ListAdapter<Address>
     private lateinit var api: GandiApi
     private var addresses = ArrayList<Address>()
@@ -28,20 +29,23 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        apiKey = intent.getStringExtra("apiKey") ?: "ERROR"
+        domain = intent.getStringExtra("domain") ?: "ERROR"
+        title = domain
+
         api = this.getApi()
         adapter = this.getAdapter()
 
         binding.addressesRefresher.setOnRefreshListener(this)
         binding.addressesList.layoutManager = LinearLayoutManager(this)
         binding.addressesList.adapter = adapter
-        domain = intent.getStringExtra("domain") ?: "ERROR"
-        title = domain
 
         binding.fab.setOnClickListener {
             val intent = Intent(ctx, EditActivity::class.java)
             val b = Bundle()
             b.putBoolean("new", true)
             b.putString("domain", domain)
+            b.putString("apiKey", apiKey)
             intent.putExtras(b)
             startActivityForResult(intent, 0)
         }
@@ -86,6 +90,7 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
                 val b = Bundle()
                 b.putBoolean("new", false)
                 b.putString("domain", domain)
+                b.putString("apiKey", apiKey)
                 b.putString("source", addresses[p].source)
                 b.putStringArrayList("destinations", addresses[p].destinations)
                 intent.putExtras(b)
@@ -95,7 +100,7 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
     }
 
     private fun getApi(): GandiApi {
-        return object: GandiApi(ctx) {
+        return object: GandiApi(apiKey, ctx) {
             override fun notify(msg: String) {
                 Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
             }

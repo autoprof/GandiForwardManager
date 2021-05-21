@@ -9,7 +9,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-abstract class GandiApi(ctx : Context) {
+abstract class GandiApi(var apiKey: String, ctx : Context) {
     private val queue = Volley.newRequestQueue(ctx)
 
     open fun notifyError(msg: String) {
@@ -88,16 +88,16 @@ abstract class GandiApi(ctx : Context) {
             "https://api.gandi.net/v5/domain/domains"
         ) { response ->
             try {
-                onDomainsReady(Domain.parseDomains(response))
+                onDomainsReady(Domain.parseDomains(apiKey, response))
             } catch (e: JSONException) {
-                notifyError(e.toString());
+                notifyError(e.toString())
             }
         }
     }
 
     open fun query(method: Int, url: String, callback: Response.Listener<String>) {
         queue.add(APIRequest(
-            "",
+            apiKey,
             method,
             url,
             callback,
@@ -107,7 +107,7 @@ abstract class GandiApi(ctx : Context) {
 
     open fun queryBody(method: Int, url: String, body: String, callback: Response.Listener<String>) {
         queue.add(APIRequest(
-            "",
+            apiKey,
             method,
             url,
             body,
