@@ -2,13 +2,11 @@ package net.syntessense.app.gandiforwardmanager
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Canvas
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
