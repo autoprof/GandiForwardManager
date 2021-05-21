@@ -1,16 +1,21 @@
 package net.syntessense.app.gandiforwardmanager
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.Canvas
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
 import net.syntessense.app.gandiforwardmanager.databinding.AddressesActivityBinding
+
 
 class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
@@ -40,6 +45,11 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         binding.addressesList.layoutManager = LinearLayoutManager(this)
         binding.addressesList.adapter = adapter
 
+        (object : ItemTouchHelper(
+            Swiper(this, domain, api, addresses,0, LEFT + RIGHT)
+        ) {
+        }).attachToRecyclerView(binding.addressesList)
+
         binding.fab.setOnClickListener {
             val intent = Intent(ctx, EditActivity::class.java)
             val b = Bundle()
@@ -67,6 +77,33 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK)
             api.getAddresses(domain)
+    }
+
+    private fun getApi(): GandiApi {
+        return object: GandiApi(apiKey, ctx) {
+            override fun notify(msg: String) {
+                Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
+            }
+            override fun onDeleteQuery() {
+                binding.addressesRefresher.isRefreshing = true
+                Snackbar.make(binding.root, "Deleting...", Snackbar.LENGTH_LONG).show()
+            }
+
+            override fun onDeleteReady() {
+                Snackbar.make(binding.root, "Deleted", Snackbar.LENGTH_LONG).show()
+                getAddresses(domain)
+            }
+            override fun onAddressesQuery() {
+                binding.addressesRefresher.isRefreshing = true
+            }
+            override fun onAddressesReady(addresses: ArrayList<Address>) {
+                ctx.addresses.clear()
+                for (a in addresses)
+                    ctx.addresses.add(a)
+                adapter.notifyDataSetChanged()
+                binding.addressesRefresher.isRefreshing = false
+            }
+        }
     }
 
     private fun getAdapter():ListAdapter<Address> {
@@ -99,21 +136,25 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         }
     }
 
-    private fun getApi(): GandiApi {
-        return object: GandiApi(apiKey, ctx) {
-            override fun notify(msg: String) {
-                Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
-            }
-            override fun onAddressesQuery() {
-                binding.addressesRefresher.isRefreshing = true
-            }
-            override fun onAddressesReady(addresses: ArrayList<Address>) {
-                ctx.addresses.clear()
-                for (a in addresses)
-                    ctx.addresses.add(a)
-                adapter.notifyDataSetChanged()
-                binding.addressesRefresher.isRefreshing = false
-            }
+    class Swiper(
+        private var ctx: Context,
+        private var domain: String,
+        private var api: GandiApi,
+        private var addresses: ArrayList<Address>,
+        dragDirs: Int,
+        swipeDirs: Int
+    ) : ItemTouchHelper.SimpleCallback(dragDirs,
+        swipeDirs
+    ) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return false
+        }
+        override fun onSwiped(vh: RecyclerView.ViewHolder, direction: Int) {
+            api.deleteAddress(domain, addresses[vh.adapterPosition].source)
         }
     }
 

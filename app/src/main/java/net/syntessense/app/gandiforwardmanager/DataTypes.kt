@@ -24,7 +24,7 @@ class Target(var address : String, var selected : Boolean) {
     }
 }
 
-class Domain (var fqdn: String, var href: String, var apiKey: String) {
+class Domain (var fqdn: String, var apiKey: String) {
     companion object {
         fun parseDomains(apiKey: String, json: String): ArrayList<Domain> {
             val domains: ArrayList<Domain> = ArrayList()
@@ -33,14 +33,14 @@ class Domain (var fqdn: String, var href: String, var apiKey: String) {
             var obj: JSONObject
             for (i in 0 until l) {
                 obj = reader.getJSONObject(i)
-                domains.add(Domain(obj.getString("fqdn"), obj.getString("href"), apiKey))
+                domains.add(Domain(obj.getString("fqdn"), apiKey))
             }
             return domains
         }
     }
 }
 
-class Address (var source: String, var destinations : ArrayList<String>, var href : String) {
+class Address (var source: String, var destinations : ArrayList<String>) {
     companion object {
         fun parseAddresses(json: String): ArrayList<Address> {
             val addresses: ArrayList<Address> = ArrayList()
@@ -54,7 +54,7 @@ class Address (var source: String, var destinations : ArrayList<String>, var hre
                 to = obj.getJSONArray("destinations")
                 tos = ArrayList()
                 for (j in 0 until to.length()) tos.add(to.getString(j))
-                addresses.add(Address(obj.getString("source"), tos, obj.getString("href")))
+                addresses.add(Address(obj.getString("source"), tos))
             }
             return addresses
         }
