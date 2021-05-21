@@ -32,10 +32,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        setResult(
-            if ((PreferenceManager.getDefaultSharedPreferences(ctx).getString("apiKey", "") ?: "")
-            != apiKeyInit) RESULT_CANCELED else RESULT_OK
-        )
         finish()
         return true
     }

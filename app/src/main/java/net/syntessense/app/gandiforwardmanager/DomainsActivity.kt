@@ -17,6 +17,7 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
     private lateinit var binding: DomainsActivityBinding
     private lateinit var adapter: ListAdapter<Domain>
     private var apis = ArrayList<GandiApi>()
+    private lateinit var originalKey : String
     private var apisReady = 0
     private var rawDomains = ArrayList<Domain>()
     private var domains = ArrayList<Domain>()
@@ -28,33 +29,37 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
         setContentView(binding.root)
 
         adapter = this.getAdapter()
-        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
-        for (ak in (sp.getString("apiKey", "") ?: "").split("\n"))
-            if (ak.trim().isNotEmpty())
-                apis.add(this.getApi(ak.trim()))
+        originalKey = PreferenceManager
+            .getDefaultSharedPreferences(ctx)
+            .getString("apiKey", "") ?: ""
 
         binding.domainsRefresher.setOnRefreshListener(this)
         binding.domainsList.layoutManager = LinearLayoutManager(this)
         binding.domainsList.adapter = adapter
         binding.fab.setOnClickListener {
-            startActivityForResult(Intent(ctx, SettingsActivity::class.java), 0)
+            startActivity(Intent(ctx, SettingsActivity::class.java))
         }
         onRefresh()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK)
-            onRefresh()
-        else refreshDomains()
-    }
-
     override fun onResume() {
         super.onResume()
-        refreshDomains()
+        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val newKey = sp.getString("apiKey", "") ?: ""
+        if (newKey == originalKey)
+            refreshDomains()
+        else {
+            originalKey = newKey
+            onRefresh()
+        }
     }
 
     override fun onRefresh() {
+        apis.clear()
+        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
+        for (ak in (sp.getString("apiKey", "") ?: "").split("\n"))
+            if (ak.trim().isNotEmpty())
+                apis.add(this.getApi(ak.trim()))
         if (apis.size == 0)
             return
         binding.domainsRefresher.isRefreshing = true
