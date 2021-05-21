@@ -114,7 +114,7 @@ class EditActivity : AppCompatActivity() {
             }
             R.id.action_delete -> {
                 api.notify("Deleting ...")
-                api.deleteAddress(domain, source)
+                api.deleteAddress(domain, source, 0)
                 true
             }
             R.id.action_create -> {
@@ -144,7 +144,7 @@ class EditActivity : AppCompatActivity() {
                 setResult(RESULT_OK)
                 finish()
             }
-            override fun onDeleteReady() {
+            override fun onDeleteReady(position: Int) {
                 setResult(RESULT_OK)
                 finish()
             }

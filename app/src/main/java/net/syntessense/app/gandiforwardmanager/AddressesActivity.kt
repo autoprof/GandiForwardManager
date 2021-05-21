@@ -44,9 +44,8 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
         binding.addressesList.adapter = adapter
 
         (object : ItemTouchHelper(
-            Swiper(this, domain, api, addresses,0, LEFT + RIGHT)
-        ) {
-        }).attachToRecyclerView(binding.addressesList)
+            Swiper(domain, api, addresses,0, LEFT + RIGHT)
+        ){}).attachToRecyclerView(binding.addressesList)
 
         binding.fab.setOnClickListener {
             val intent = Intent(ctx, EditActivity::class.java)
@@ -83,13 +82,13 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
                 Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
             }
             override fun onDeleteQuery() {
-                binding.addressesRefresher.isRefreshing = true
                 Snackbar.make(binding.root, "Deleting...", Snackbar.LENGTH_LONG).show()
             }
 
-            override fun onDeleteReady() {
+            override fun onDeleteReady(position: Int) {
+                addresses.removeAt(position)
+                adapter.notifyDataSetChanged()
                 Snackbar.make(binding.root, "Deleted", Snackbar.LENGTH_LONG).show()
-                getAddresses(domain)
             }
             override fun onAddressesQuery() {
                 binding.addressesRefresher.isRefreshing = true
@@ -135,7 +134,6 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
     }
 
     class Swiper(
-        private var ctx: Context,
         private var domain: String,
         private var api: GandiApi,
         private var addresses: ArrayList<Address>,
@@ -152,7 +150,7 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
             return false
         }
         override fun onSwiped(vh: RecyclerView.ViewHolder, direction: Int) {
-            api.deleteAddress(domain, addresses[vh.adapterPosition].source)
+            api.deleteAddress(domain, addresses[vh.adapterPosition].source, vh.adapterPosition)
         }
     }
 

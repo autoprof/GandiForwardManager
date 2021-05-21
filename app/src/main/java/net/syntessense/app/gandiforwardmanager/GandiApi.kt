@@ -19,7 +19,7 @@ abstract class GandiApi(var apiKey: String, ctx : Context) {
     open fun onPutReady() {}
     open fun onCreateReady() {}
     open fun onDeleteQuery() {}
-    open fun onDeleteReady() {}
+    open fun onDeleteReady(position: Int) {}
     open fun onDomainsQuery() {}
     open fun onDomainsReady(domains: ArrayList<Domain>) {}
     open fun onAddressesQuery() {}
@@ -61,12 +61,12 @@ abstract class GandiApi(var apiKey: String, ctx : Context) {
         }
     }
 
-    open fun deleteAddress(domain: String, source: String) {
+    open fun deleteAddress(domain: String, source: String, position: Int) {
         onDeleteQuery()
         query(
             Request.Method.DELETE,
             "https://api.gandi.net/v5/email/forwards/$domain/$source"
-        ) { onDeleteReady() }
+        ) { onDeleteReady(position) }
     }
 
     open fun getAddresses(domain: String) {
