@@ -2,7 +2,10 @@ package net.syntessense.app.gandiforwardmanager
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.SearchView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
@@ -21,12 +24,43 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
     private var apisReady = 0
     private var rawDomains = ArrayList<Domain>()
     private var domains = ArrayList<Domain>()
+    private lateinit var searchView : SearchView
+    private var filter = ""
     var ctx = this
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.options_menu, menu)
+        searchView = menu.findItem(R.id.search).actionView as SearchView
+        searchView.isIconifiedByDefault = false
+        searchView.setPadding(-150, 0, 0, 0)
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filter = newText ?: ""
+                refreshDomains()
+                return true
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                filter = query ?: ""
+                return true
+            }
+        })
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.search -> searchView.requestFocus()
+        }
+        return true
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DomainsActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         adapter = this.getAdapter()
         originalKey = PreferenceManager
@@ -73,7 +107,11 @@ class DomainsActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListene
         val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
         domains.clear()
         for (d in rawDomains)
-            if (sp.getBoolean("show_domain_" + d.fqdn, false))
+            if (
+                sp.getBoolean("show_domain_" + d.fqdn, false) &&(
+                        filter.trim() == "" || d.fqdn.contains(filter.trim(), true)
+                )
+            )
                 domains.add(d)
         adapter.notifyDataSetChanged()
     }

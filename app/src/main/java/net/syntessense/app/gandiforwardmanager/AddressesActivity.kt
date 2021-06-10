@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.SearchView
 import android.widget.TextView
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -27,24 +29,25 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
     private var rawAddresses = ArrayList<Address>()
     private var addresses = ArrayList<Address>()
     private var filter = ""
+    private lateinit var searchView : SearchView
     var ctx = this
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.options_menu, menu)
-        (menu.findItem(R.id.search).actionView as SearchView).isIconifiedByDefault = false
-        (menu.findItem(R.id.search).actionView as SearchView).maxWidth = Int.MAX_VALUE
-        (menu.findItem(R.id.search).actionView as SearchView).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        searchView = menu.findItem(R.id.search).actionView as SearchView
+        searchView.isIconifiedByDefault = false
+        searchView.setPadding(-150, 0, 0, 0)
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                //TODO("Not yet implemented")
-                //Snackbar.make(binding.root, newText ?: "hello", Snackbar.LENGTH_LONG).show()
                 filter = newText ?: ""
                 refreshAdresses()
                 return true
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                //TODO("Not yet implemented")
-                return false
+                filter = query ?: ""
+                return true
             }
         })
         return true
@@ -86,13 +89,9 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
 
     }
 
-    private fun search() {
-
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.search -> search()
+            R.id.search -> searchView.requestFocus()
             else -> finish()
         }
         return true
