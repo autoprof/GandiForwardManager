@@ -46,7 +46,7 @@ class SettingsActivity : AppCompatActivity() {
         return object: GandiApi(apiKey, ctx) {
             override fun onDomainsReady(domains: ArrayList<Domain>) {
                 val prefCat = PreferenceCategory(fragment.preferenceScreen.context)
-                prefCat.title = "Domains to show in list"
+                prefCat.title = "Domains from : $apiKey"
                 fragment.preferenceScreen.addPreference(prefCat)
                 var domainPref : SwitchPreference
                 for (d in domains) {

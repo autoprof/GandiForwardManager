@@ -1,12 +1,14 @@
 package net.syntessense.app.gandiforwardmanager
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.SearchView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,8 +24,31 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
     private lateinit var apiKey : String
     private lateinit var adapter: ListAdapter<Address>
     private lateinit var api: GandiApi
+    private var rawAddresses = ArrayList<Address>()
     private var addresses = ArrayList<Address>()
+    private var filter = ""
     var ctx = this
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.options_menu, menu)
+        (menu.findItem(R.id.search).actionView as SearchView).isIconifiedByDefault = false
+        (menu.findItem(R.id.search).actionView as SearchView).maxWidth = Int.MAX_VALUE
+        (menu.findItem(R.id.search).actionView as SearchView).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                //TODO("Not yet implemented")
+                //Snackbar.make(binding.root, newText ?: "hello", Snackbar.LENGTH_LONG).show()
+                filter = newText ?: ""
+                refreshAdresses()
+                return true
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                //TODO("Not yet implemented")
+                return false
+            }
+        })
+        return true
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,8 +86,15 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
 
     }
 
+    private fun search() {
+
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        finish()
+        when (item.itemId) {
+            R.id.search -> search()
+            else -> finish()
+        }
         return true
     }
 
@@ -86,21 +118,33 @@ class AddressesActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListe
             }
 
             override fun onDeleteReady(position: Int) {
-                addresses.removeAt(position)
+                rawAddresses.removeAt(position)
                 adapter.notifyDataSetChanged()
                 Snackbar.make(binding.root, "Deleted", Snackbar.LENGTH_LONG).show()
             }
+
             override fun onAddressesQuery() {
                 binding.addressesRefresher.isRefreshing = true
             }
+
             override fun onAddressesReady(addresses: ArrayList<Address>) {
-                ctx.addresses.clear()
+                rawAddresses.clear()
                 for (a in addresses)
-                    ctx.addresses.add(a)
-                adapter.notifyDataSetChanged()
+                    rawAddresses.add(a)
+                refreshAdresses()
                 binding.addressesRefresher.isRefreshing = false
             }
         }
+    }
+
+
+    private fun refreshAdresses() {
+        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
+        addresses.clear()
+        for (d in rawAddresses)
+            if (filter.trim() == "" || d.source.contains(filter.trim(), true) )
+                addresses.add(d)
+        adapter.notifyDataSetChanged()
     }
 
     private fun getAdapter():ListAdapter<Address> {

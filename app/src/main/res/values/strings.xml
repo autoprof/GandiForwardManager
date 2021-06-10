@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">GandiForwardManager</string>
-    <string name="title_activity_domains">DomainsActivity</string>
+    <string name="title_activity_domains">GandiForwardManager</string>
 
     <string name="domains">Domains</string>
     <string name="domain">Domain :</string>
@@ -9,6 +9,9 @@
     <string name="dtargets">Default Targets :</string>
     <string name="mtargets">More Targets :</string>
     <string name="save">Save</string>
+
+
+    <string name="search_title">Search</string>
 
 
     <string name="hello_first_fragment">Hello first fragment</string>
